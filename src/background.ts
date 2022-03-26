@@ -1,6 +1,6 @@
 "use strict";
 
-import { app, protocol, BrowserWindow } from "electron";
+import { app, protocol, BrowserWindow, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 const isDevelopment = process.env.NODE_ENV !== "production";
@@ -18,21 +18,54 @@ async function createWindow() {
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env
-        .ELECTRON_NODE_INTEGRATION as unknown as boolean,
-      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      nodeIntegration: true,
+      contextIsolation: false,
+      webSecurity: false,
     },
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
-    if (!process.env.IS_TEST) win.webContents.openDevTools();
+    // if (!process.env.IS_TEST) win.webContents.openDevTools();
   } else {
     createProtocol("app");
     // Load the index.html when not in development
     win.loadURL("app://./index.html");
   }
+
+
+  ipcMain.on('component.open', (event, args) => {
+    const child = new BrowserWindow({
+      modal: false, // Bloqueia a janela parent quando TRUE
+      show: false,
+      parent: win, // Ao apontar, a nova janela ocupa o controle do pai
+      frame: true,
+      hasShadow: false,
+      fullscreenable: false,
+      alwaysOnTop: true,
+      resizable: true,
+      minimizable: true,
+      maximizable: true,
+      transparent: true,
+      titleBarStyle: 'customButtonsOnHover',
+      closable: false,
+      // menuBarVisible: false,
+      webPreferences: {
+        // Use pluginOptions.nodeIntegration, leave this alone
+        // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
+        nodeIntegration: true,
+        contextIsolation: false,
+        webSecurity: false,
+      }
+    })
+    child.loadURL(`http://localhost:8080/?cp=${args[0].component}`)
+    child.once('ready-to-show', () => {
+      // child.setMenu(null)
+      child.setHasShadow(false)
+      child.show()
+    })
+  })
 }
 
 // Quit when all windows are closed.
@@ -49,6 +82,8 @@ app.on("activate", () => {
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
+
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

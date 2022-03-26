@@ -1,0 +1,18 @@
+.dyn-body {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.button-area {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}

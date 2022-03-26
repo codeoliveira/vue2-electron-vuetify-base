@@ -34,12 +34,14 @@
     </v-app-bar>
 
     <v-main>
+      <router-view>
       <HelloWorld />
+      </router-view>
     </v-main>
   </v-app>
 </template>
 
-<script>
+<script lang="ts">
 import HelloWorld from "./components/HelloWorld";
 
 export default {
@@ -52,5 +54,10 @@ export default {
   data: () => ({
     //
   }),
+
+  mounted(){
+    console.log('ENV', process.env.ELECTRON_NODE_INTEGRATION);
+    
+  }
 };
 </script>
